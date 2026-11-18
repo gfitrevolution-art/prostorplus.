@@ -2,7 +2,7 @@
 # >>> Promijeni samo red "repo" ispod: TVOJ_GITHUB_KORISNIK/prostorplus <<<
 backend:
   name: github
-  repo: gfitrevolution-art/prostorplus./prostorplus
+  repo: gfitrevolution-art/prostorplus.
   branch: main
   commit_messages:
     update: "Izmjena: {{slug}}"
