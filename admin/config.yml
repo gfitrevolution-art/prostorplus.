@@ -1,0 +1,88 @@
+# Prostor Plus — admin panel (Decap CMS)
+# >>> Promijeni samo red "repo" ispod: TVOJ_GITHUB_KORISNIK/prostorplus <<<
+backend:
+  name: github
+  repo: TVOJ_GITHUB_KORISNIK/prostorplus
+  branch: main
+  commit_messages:
+    update: "Izmjena: {{slug}}"
+
+locale: hr
+site_url: /
+display_url: /
+media_folder: slike/oglasi
+public_folder: /slike/oglasi
+
+collections:
+  - name: sajt
+    label: Prostor Plus
+    editor:
+      preview: false
+    files:
+      - name: oglasi
+        label: "🏠 Oglasi"
+        file: podaci/oglasi.json
+        fields:
+          - label: Oglasi
+            name: oglasi
+            label_singular: oglas
+            widget: list
+            add_to_top: true
+            collapsed: true
+            summary: "{{fields.naslov}} · {{fields.mjesto}} · {{fields.cijena}} {{fields.jedinica}}"
+            fields:
+              - { label: "Objavljen na sajtu", name: objavljen, widget: boolean, default: true, hint: "Isključi kad se proda ili izda — oglas nestane sa sajta i mape, a ostane sačuvan ovdje." }
+              - { label: "Ovo je PRIMJER (nije pravi oglas)", name: primjer, widget: boolean, default: false }
+              - label: Kategorija
+                name: kat
+                widget: select
+                options:
+                  - { label: "Prodaja — kuća", value: "prodaja-kuca" }
+                  - { label: "Prodaja — stan", value: "prodaja-stanova" }
+                  - { label: "Prodaja — plac", value: "prodaja-placeva" }
+                  - { label: "Najam — kuća", value: "najam-kuca" }
+                  - { label: "Najam — stan", value: "najam-stanova" }
+                  - { label: "Stan na dan", value: "stan-na-dan" }
+                  - { label: "Poslovni prostor", value: "poslovni-prostor" }
+              - { label: "Naslov", name: naslov, widget: string, hint: "npr. Porodična kuća sa okućnicom" }
+              - { label: "Mjesto", name: mjesto, widget: string, default: "Modriča" }
+              - { label: "Cijena (samo broj, prazno = Cijena na upit)", name: cijena, widget: number, value_type: int, required: false }
+              - label: Jedinica cijene
+                name: jedinica
+                widget: select
+                default: "KM"
+                options: ["KM", "KM/mj", "KM/noć", "KM/m²"]
+              - { label: "Kvadratura (m²)", name: m2, widget: number, required: false }
+              - { label: "Broj soba", name: sobe, widget: number, value_type: int, required: false }
+              - { label: "Sprat", name: sprat, widget: string, required: false, hint: "npr. P+1, 2., Prizemlje" }
+              - { label: "Grijanje", name: grijanje, widget: string, required: false }
+              - label: Uknjiženo
+                name: uknjizeno
+                widget: select
+                required: false
+                options: ["Da", "Ne", "U postupku"]
+              - { label: "Plac", name: plac, widget: string, required: false, hint: "npr. 600 m²" }
+              - { label: "Opis", name: opis, widget: text, required: false }
+              - { label: "Koordinate", name: koordinate, widget: string, hint: "Google Maps → drži prst (ili desni klik) na lokaciji → kopiraj brojeve, npr. 44.9585, 18.2905. Stavi približnu lokaciju ako vlasnik ne želi tačnu." }
+              - label: Oznaka
+                name: oznaka
+                widget: select
+                required: false
+                options:
+                  - { label: "Novo", value: "novo" }
+                  - { label: "Sniženo", value: "snizeno" }
+              - { label: "Datum objave", name: datum, widget: datetime, format: "YYYY-MM-DD", date_format: "DD.MM.YYYY", time_format: false, picker_utc: true }
+              - { label: "Video (YouTube link)", name: video, widget: string, required: false, hint: "Zalijepi link videa sa YouTubea (može i Shorts)." }
+              - { label: "Naslovna slika", name: slika, widget: image, required: false, choose_url: false }
+              - { label: "Telefon vlasnika", name: tel, widget: string, required: false, hint: "npr. 065 123 456 — sajt ga sam pretvori u +387. Uzmi saglasnost vlasnika da se broj objavi." }
+
+      - name: podesavanja
+        label: "⚙️ Podešavanja i cijene"
+        file: podaci/podesavanja.json
+        fields:
+          - { label: "WhatsApp broj Prostor Plusa", name: whatsapp, widget: string, required: false, hint: "npr. 38765123456 (bez + i bez nule)" }
+          - { label: "Email", name: email, widget: string, required: false }
+          - { label: "Facebook stranica (link)", name: facebook, widget: string, required: false }
+          - { label: "Cijena paketa Osnovni (KM)", name: cijena_osnovni, widget: number, required: false, hint: "Prazno = Cijena na upit" }
+          - { label: "Cijena paketa Standard (KM)", name: cijena_standard, widget: number, required: false }
+          - { label: "Cijena paketa Premium (KM)", name: cijena_premium, widget: number, required: false }
