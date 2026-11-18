@@ -429,13 +429,30 @@ footer{border-top:1px solid var(--edge)}
 .g-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,168,86,.5);background:rgba(11,20,38,.85);color:#d4a856;font-size:24px;line-height:1;cursor:pointer;display:grid;place-items:center}
 .g-prev{left:4px}.g-next{right:4px}
 .m-media img.m-cover{width:100%;height:100%;object-fit:cover}
-.lb{position:fixed;inset:0;z-index:50;background:rgba(5,10,20,.96);display:grid;place-items:center}
+.lb{position:fixed;inset:0;z-index:50;background:#060c18;display:grid;place-items:center}
 .lb[hidden]{display:none}
-.lb img{max-width:94vw;max-height:84vh;object-fit:contain;border-radius:12px;touch-action:pan-y}
+.lb img{width:100%;max-width:94vw;max-height:80vh;object-fit:contain;border-radius:12px;touch-action:pan-y}
 .lb-x{position:absolute;top:12px;right:16px;font-size:34px;background:none;border:0;color:#fff;cursor:pointer}
 .lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:1px solid rgba(212,168,86,.6);background:rgba(11,20,38,.8);color:#d4a856;font-size:30px;cursor:pointer}
 .lb-p{left:12px}.lb-n{right:12px}
 .lb-c{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#d4a856;font-weight:700;letter-spacing:.05em}
+
+/* Traka sa reklamama */
+.ads{position:fixed;left:0;right:0;bottom:0;z-index:40;height:46px;display:flex;align-items:center;background:rgba(11,19,34,.94);backdrop-filter:blur(8px);border-top:1px solid var(--gold);overflow:hidden}
+.ads[hidden]{display:none}
+.ads-lbl{flex:0 0 auto;padding:0 12px;height:100%;display:grid;place-items:center;background:var(--gold);color:#0b1322;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;z-index:1}
+.ads-vp{flex:1;overflow:hidden;height:100%;mask-image:linear-gradient(90deg,transparent,#000 4%,#000 96%,transparent)}
+.ads-track{display:flex;width:max-content;height:100%;align-items:center;animation:ads-roll var(--ads-t,40s) linear infinite}
+.ads:hover .ads-track{animation-play-state:paused}
+.ads-item{display:flex;align-items:center;gap:10px;padding:0 28px;height:100%;color:var(--text);text-decoration:none;white-space:nowrap;font-size:14px;border-right:1px solid var(--line)}
+.ads-item b{color:var(--gold-2)}
+.ads-item img{height:30px;width:auto;max-width:90px;object-fit:contain;border-radius:6px}
+.ads-x{flex:0 0 auto;width:38px;height:100%;background:none;border:0;color:var(--muted);font-size:20px;cursor:pointer}
+@keyframes ads-roll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.ads-track{animation:none}}
+body.ima-reklame{padding-bottom:calc(46px + env(safe-area-inset-bottom,0px))}
+.ads{padding-bottom:env(safe-area-inset-bottom,0px);height:calc(46px + env(safe-area-inset-bottom,0px))}
+body.ima-reklame .dock{bottom:calc(56px + env(safe-area-inset-bottom,0px))}
 </style>
 </head>
 <body>
@@ -630,6 +647,11 @@ footer{border-top:1px solid var(--edge)}
   </section>
 </main>
 
+<div class="ads" id="ads" hidden aria-label="Reklame">
+  <div class="ads-lbl">Reklama</div>
+  <div class="ads-vp"><div class="ads-track" id="ads-track"></div></div>
+  <button class="ads-x" id="ads-x" type="button" aria-label="Sakrij reklame">×</button>
+</div>
 <footer>
   <div class="wrap foot">
     <div style="display:flex;align-items:center;gap:12px"><svg width="40" height="28" aria-hidden="true"><use href="#pp-logo" fill="url(#pp-zlato)"/></svg><span><b style="color:var(--text)">Prostor Plus</b> · oglasnik nekretnina, ne agencija · Modriča i regija</span></div>
@@ -739,6 +761,17 @@ const POD = ucitaj("podaci/podesavanja.json") || {};
 if (POD.whatsapp) CONFIG.whatsapp = String(POD.whatsapp).replace(/\D/g, "").replace(/^0+/, "");
 if (POD.email) CONFIG.email = POD.email;
 if (POD.facebook) CONFIG.facebook = POD.facebook;
+/* Statistika posjeta (GoatCounter) — kod se upisuje u admin panelu → Podešavanja */
+const GC = String(POD.goatcounter || "").trim().replace(/^https?:\/\//, "").replace(/\.goatcounter\.com.*$/, "");
+if (GC) {
+  const sc = document.createElement("script");
+  sc.async = true; sc.src = "https://gc.zgo.at/count.js";
+  sc.dataset.goatcounter = `https://${GC}.goatcounter.com/count`;
+  document.head.appendChild(sc);
+}
+function prati(put, naslov) {
+  try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: put, title: naslov || put, event: true }); } catch (_) {}
+}
 PAKETI.forEach(p => { const c = POD["cijena_" + p.id]; if (c !== "" && c != null && !isNaN(c)) p.cijena = Number(c); });
 const OGLASI = ((ucitaj("podaci/oglasi.json") || {}).oglasi || [])
   .filter(o => o && o.objavljen !== false)
@@ -949,6 +982,7 @@ function otvori(id) {
   markeri.forEach(({ el, o:x }) => el.classList.toggle("on", x.id === id));
   $("#m-media").innerHTML = videoHTML(o);
   postaviGaleriju(o);
+  prati("oglas: " + o.naslov + " (" + o.mjesto + ")");
   $("#m-tip").textContent = `${katIme(o.kat)} · ${o.mjesto}${o.primjer ? " · PRIMJER" : ""}`;
   $("#m-title").textContent = o.naslov;
   $("#m-price").textContent = cijenaTxt(o);
@@ -974,6 +1008,11 @@ function otvori(id) {
   modal.showModal();
 }
 $("#m-close").addEventListener("click", () => modal.close());
+$("#m-contact").addEventListener("click", e => {
+  const a = e.target.closest("a"); if (!a) return;
+  const tip = /^tel:/.test(a.href) ? "poziv" : /viber/.test(a.href) ? "viber" : /wa\.me/.test(a.href) ? "whatsapp" : "kontakt";
+  prati(`kontakt vlasnika (${tip}): ` + $("#m-title").textContent);
+});
 
 /* Galerija u oglasu */
 let galSlike = [], galI = 0;
@@ -1046,6 +1085,7 @@ $("#upit").addEventListener("submit", e => {
     + `${$("#u-mjesto").value.trim() ? ", " + $("#u-mjesto").value.trim() : ""}. Paket: ${paket}.`
     + `${$("#u-poruka").value.trim() ? "\n" + $("#u-poruka").value.trim() : ""}`;
   if (!CONFIG.whatsapp) { msg.textContent = "Broj za WhatsApp još nije podešen. Piši nam na " + CONFIG.email + "."; return; }
+  prati("upit: oglasite kod nas");
   msg.textContent = "Otvaram WhatsApp…";
   location.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(tekst)}`;
 });
@@ -1054,6 +1094,30 @@ if (OGLASI.some(o => o.primjer)) {
   $("#primjer-info").hidden = false;
   $("#map-primjer").hidden = false;
 }
+
+/* Reklame na dnu (uređuju se u admin panelu → Reklame) */
+(function () {
+  const R = ucitaj("podaci/reklame.json") || {};
+  const lista = (R.reklame || []).filter(r => r && r.aktivna !== false && (r.naziv || r.tekst || r.logo));
+  if (R.prikazi === false || !lista.length) return;
+  try { if (sessionStorage.getItem("pp-ads-off") === "1") return; } catch (_) {}
+  const item = r => {
+    const sadrzaj = `${r.logo ? `<img src="${esc(r.logo)}" alt="">` : ""}${r.naziv ? `<b>${esc(r.naziv)}</b>` : ""}${r.tekst ? `<span>${esc(r.tekst)}</span>` : ""}`;
+    return r.link ? `<a class="ads-item" href="${esc(r.link)}" target="${r.link.startsWith("#") ? "_self" : "_blank"}" rel="noopener sponsored">${sadrzaj}</a>`
+                  : `<div class="ads-item">${sadrzaj}</div>`;
+  };
+  let jedan = lista.map(item).join("");
+  while (lista.length < 4 && jedan.length < 2000) { jedan += lista.map(item).join(""); if (jedan.length > 600) break; }
+  $("#ads-track").innerHTML = jedan + jedan;
+  const brzina = { sporo: 6, normalno: 4, brzo: 2.5 }[R.brzina] || 4;
+  $("#ads-track").style.setProperty("--ads-t", Math.max(20, lista.length * brzina * 3) + "s");
+  $("#ads").hidden = false; document.body.classList.add("ima-reklame");
+  $("#ads-track").addEventListener("click", e => { const a = e.target.closest("a"); if (a) prati("reklama klik: " + (a.querySelector("b") ? a.querySelector("b").textContent : a.href)); });
+  $("#ads-x").addEventListener("click", () => {
+    $("#ads").hidden = true; document.body.classList.remove("ima-reklame");
+    try { sessionStorage.setItem("pp-ads-off", "1"); } catch (_) {}
+  });
+})();
 render();
 </script>
 </body>

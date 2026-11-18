@@ -90,6 +90,30 @@ collections:
           - { label: "WhatsApp broj Prostor Plusa", name: whatsapp, widget: string, required: false, hint: "npr. 38765123456 (bez + i bez nule)" }
           - { label: "Email", name: email, widget: string, required: false }
           - { label: "Facebook stranica (link)", name: facebook, widget: string, required: false }
+          - { label: "Statistika: GoatCounter kod", name: goatcounter, widget: string, required: false, hint: "Samo kod koji si izabrao pri registraciji, npr. prostorplus" }
           - { label: "Cijena paketa Osnovni (KM)", name: cijena_osnovni, widget: number, required: false, hint: "Prazno = Cijena na upit" }
           - { label: "Cijena paketa Standard (KM)", name: cijena_standard, widget: number, required: false }
           - { label: "Cijena paketa Premium (KM)", name: cijena_premium, widget: number, required: false }
+
+      - name: reklame
+        label: "📢 Reklame (traka na dnu)"
+        file: podaci/reklame.json
+        fields:
+          - { label: "Prikaži traku sa reklamama", name: prikazi, widget: boolean, default: true }
+          - label: "Brzina"
+            name: brzina
+            widget: select
+            default: normalno
+            options: [sporo, normalno, brzo]
+          - label: Reklame
+            name: reklame
+            widget: list
+            label_singular: reklamu
+            summary: "{{fields.naziv}} — {{fields.tekst}}"
+            fields:
+              - { label: "Aktivna", name: aktivna, widget: boolean, default: true, hint: "Isključi kad reklami istekne rok." }
+              - { label: "Naziv firme", name: naziv, widget: string }
+              - { label: "Tekst", name: tekst, widget: string, required: false, hint: "Kratko, npr. 'Popust 20% na sve usluge'" }
+              - { label: "Logo", name: logo, widget: image, required: false, choose_url: false }
+              - { label: "Link (sajt, Instagram, Facebook)", name: link, widget: string, required: false }
+              - { label: "Bilješka (vidiš samo ti)", name: biljeska, widget: string, required: false, hint: "npr. plaćeno do 31.12., 30 KM" }
