@@ -1,0 +1,20 @@
+{
+  "prikazi": true,
+  "brzina": "normalno",
+  "reklame": [
+    {
+      "aktivna": true,
+      "naziv": "Prostor Plus",
+      "tekst": "Ovdje može biti reklama vaše firme — javite se",
+      "logo": "",
+      "link": "#kontakt"
+    },
+    {
+      "aktivna": true,
+      "naziv": "Popravka Plus",
+      "tekst": "Majstori i popravke — Modriča i region",
+      "logo": "",
+      "link": "https://www.instagram.com/popravkaplus_md/"
+    }
+  ]
+}
