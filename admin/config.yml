@@ -1,5 +1,5 @@
 # Prostor Plus — admin panel (Decap CMS)
-# >>> Promijeni samo red "repo" ispod: TVOJ_GITHUB_KORISNIK/prostorplus <<<
+# GitHub repozitorij sajta
 backend:
   name: github
   repo: gfitrevolution-art/prostorplus.
@@ -73,7 +73,14 @@ collections:
                   - { label: "Sniženo", value: "snizeno" }
               - { label: "Datum objave", name: datum, widget: datetime, format: "YYYY-MM-DD", date_format: "DD.MM.YYYY", time_format: false, picker_utc: true }
               - { label: "Video (YouTube link)", name: video, widget: string, required: false, hint: "Zalijepi link videa sa YouTubea (može i Shorts)." }
-              - { label: "Naslovna slika", name: slika, widget: image, required: false, choose_url: false }
+              - { label: "Naslovna slika", name: slika, widget: image, required: false, choose_url: false, hint: "Slika koja se vidi na kartici i mapi." }
+              - label: "Galerija slika"
+                name: galerija
+                widget: list
+                required: false
+                label_singular: slika
+                hint: "Klikni 'Dodaj sliku' za svaku sliku. Redoslijed mijenjaš prevlačenjem."
+                field: { label: "Slika", name: slika, widget: image, choose_url: false }
               - { label: "Telefon vlasnika", name: tel, widget: string, required: false, hint: "npr. 065 123 456 — sajt ga sam pretvori u +387. Uzmi saglasnost vlasnika da se broj objavi." }
 
       - name: podesavanja

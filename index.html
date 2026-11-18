@@ -418,6 +418,24 @@ footer{border-top:1px solid var(--edge)}
 @media (max-width:999px){.map-primjer{top:140px;font-size:11px;max-width:calc(100% - 24px);white-space:normal;text-align:center}}
 .pin.pin-primjer{background:var(--bg);box-shadow:0 0 0 2px var(--gold),0 6px 14px rgba(0,0,0,.5);border:3px dashed var(--gold)}
 .pin.pin-primjer::after{border-style:dashed}
+
+/* Galerija */
+.m-gal{position:relative;margin:0 8px}
+.g-track{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 0}
+.g-track::-webkit-scrollbar{display:none}
+.g-track button{flex:0 0 auto;width:min(42%,220px);aspect-ratio:4/3;border:1px solid var(--line,rgba(212,168,86,.25));border-radius:16px;overflow:hidden;padding:0;cursor:zoom-in;scroll-snap-align:start;background:#0f1a2e}
+.g-track img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s}
+.g-track button:hover img{transform:scale(1.05)}
+.g-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:36px;height:36px;border-radius:50%;border:1px solid rgba(212,168,86,.5);background:rgba(11,20,38,.85);color:#d4a856;font-size:24px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.g-prev{left:4px}.g-next{right:4px}
+.m-media img.m-cover{width:100%;height:100%;object-fit:cover}
+.lb{position:fixed;inset:0;z-index:50;background:rgba(5,10,20,.96);display:grid;place-items:center}
+.lb[hidden]{display:none}
+.lb img{max-width:94vw;max-height:84vh;object-fit:contain;border-radius:12px;touch-action:pan-y}
+.lb-x{position:absolute;top:12px;right:16px;font-size:34px;background:none;border:0;color:#fff;cursor:pointer}
+.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:1px solid rgba(212,168,86,.6);background:rgba(11,20,38,.8);color:#d4a856;font-size:30px;cursor:pointer}
+.lb-p{left:12px}.lb-n{right:12px}
+.lb-c{position:absolute;bottom:16px;left:0;right:0;text-align:center;color:#d4a856;font-weight:700;letter-spacing:.05em}
 </style>
 </head>
 <body>
@@ -630,6 +648,18 @@ footer{border-top:1px solid var(--edge)}
 <dialog id="modal" aria-labelledby="m-title">
   <button class="m-close" id="m-close" aria-label="Zatvori">×</button>
   <div class="m-media" id="m-media"></div>
+  <div class="m-gal" id="m-gal" hidden>
+    <button class="g-nav g-prev" id="g-prev" type="button" aria-label="Prethodna slika">‹</button>
+    <div class="g-track" id="g-track"></div>
+    <button class="g-nav g-next" id="g-next" type="button" aria-label="Sljedeća slika">›</button>
+  </div>
+  <div class="lb" id="lb" hidden>
+    <button class="lb-x" id="lb-x" type="button" aria-label="Zatvori">×</button>
+    <button class="lb-nav lb-p" id="lb-p" type="button" aria-label="Prethodna">‹</button>
+    <img id="lb-img" alt="">
+    <button class="lb-nav lb-n" id="lb-n" type="button" aria-label="Sljedeća">›</button>
+    <div class="lb-c" id="lb-c"></div>
+  </div>
   <div class="m-body">
     <div style="display:grid;gap:12px;min-width:0">
       <div class="primjer-box" id="m-primjer" role="note" hidden><b>⚠ Ovo je primjer oglasa</b><span>Izmišljena nekretnina. Nije ni u jednoj stvarnoj zgradi ili kući i nije vezana ni za jednog vlasnika. Tačka na mapi je postavljena nasumično. Služi samo da pokaže kako će izgledati pravi oglasi.</span></div>
@@ -715,7 +745,8 @@ const OGLASI = ((ucitaj("podaci/oglasi.json") || {}).oglasi || [])
   .map((o, i) => {
     const k = String(o.koordinate || "").match(/-?\d+(?:\.\d+)?/g) || [];
     const broj = v => (v === "" || v == null || isNaN(v)) ? null : Number(v);
-    return { ...o, id: i + 1, primjer: !!o.primjer,
+    const gal = (Array.isArray(o.galerija) ? o.galerija : []).map(g => typeof g === "string" ? g : (g && g.slika)).filter(Boolean);
+    return { ...o, id: i + 1, primjer: !!o.primjer, galerija: gal, slika: o.slika || gal[0] || "",
       lat: k.length >= 2 ? Number(k[0]) : null, lng: k.length >= 2 ? Number(k[1]) : null,
       cijena: broj(o.cijena), m2: broj(o.m2), sobe: broj(o.sobe),
       tel: String(o.tel || "").replace(/\D/g, "").replace(/^00/, "").replace(/^0(?=6)/, "387") };
@@ -910,12 +941,14 @@ function videoHTML(o) {
     return `<iframe src="https://www.youtube-nocookie.com/embed/${yt[1]}?rel=0&modestbranding=1&playsinline=1" title="Video obilazak" style="width:100%;height:100%;border:0" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>`;
   if (o.video)
     return `<a class="btn btn-gold" href="${esc(o.video)}" target="_blank" rel="noopener">▶ Pogledaj video obilazak</a>`;
+  if (o.slika) return `<img class="m-cover" src="${esc(o.slika)}" alt="${esc(o.naslov)}">`;
   return `<div style="text-align:center;color:var(--muted)">${kucaSvg}<div style="margin-top:8px">Video obilazak uskoro</div></div>`;
 }
 function otvori(id) {
   const o = OGLASI.find(x => x.id === id); if (!o) return;
   markeri.forEach(({ el, o:x }) => el.classList.toggle("on", x.id === id));
   $("#m-media").innerHTML = videoHTML(o);
+  postaviGaleriju(o);
   $("#m-tip").textContent = `${katIme(o.kat)} · ${o.mjesto}${o.primjer ? " · PRIMJER" : ""}`;
   $("#m-title").textContent = o.naslov;
   $("#m-price").textContent = cijenaTxt(o);
@@ -941,8 +974,41 @@ function otvori(id) {
   modal.showModal();
 }
 $("#m-close").addEventListener("click", () => modal.close());
+
+/* Galerija u oglasu */
+let galSlike = [], galI = 0;
+function postaviGaleriju(o) {
+  galSlike = [...new Set([o.slika, ...(o.galerija || [])].filter(Boolean))];
+  const box = $("#m-gal");
+  if (galSlike.length < 1 || (!o.video && galSlike.length < 2)) { box.hidden = true; $("#g-track").innerHTML = ""; return; }
+  box.hidden = false;
+  $("#g-track").innerHTML = galSlike.map((src, i) =>
+    `<button type="button" data-i="${i}" aria-label="Slika ${i + 1}"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join("");
+  $("#g-track").scrollLeft = 0;
+}
+$("#g-track").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (b) lbOtvori(+b.dataset.i); });
+$("#m-media").addEventListener("click", e => { if (e.target.classList.contains("m-cover") && galSlike.length) lbOtvori(0); });
+$("#g-prev").addEventListener("click", () => $("#g-track").scrollBy({ left: -$("#g-track").clientWidth * .8, behavior: "smooth" }));
+$("#g-next").addEventListener("click", () => $("#g-track").scrollBy({ left: $("#g-track").clientWidth * .8, behavior: "smooth" }));
+function lbPrikazi() { $("#lb-img").src = galSlike[galI]; $("#lb-c").textContent = `${galI + 1} / ${galSlike.length}`; }
+function lbOtvori(i) { galI = i; lbPrikazi(); $("#lb").hidden = false; }
+function lbKorak(d) { galI = (galI + d + galSlike.length) % galSlike.length; lbPrikazi(); }
+$("#lb-x").addEventListener("click", e => { e.stopPropagation(); $("#lb").hidden = true; });
+$("#lb-p").addEventListener("click", e => { e.stopPropagation(); lbKorak(-1); });
+$("#lb-n").addEventListener("click", e => { e.stopPropagation(); lbKorak(1); });
+$("#lb").addEventListener("click", e => { if (e.target.id === "lb") $("#lb").hidden = true; });
+let tx = null;
+$("#lb").addEventListener("touchstart", e => { tx = e.touches[0].clientX; }, { passive: true });
+$("#lb").addEventListener("touchend", e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 40) lbKorak(d < 0 ? 1 : -1); tx = null; });
+modal.addEventListener("keydown", e => {
+  if ($("#lb").hidden) return;
+  if (e.key === "ArrowRight") lbKorak(1);
+  if (e.key === "ArrowLeft") lbKorak(-1);
+  if (e.key === "Escape") { e.preventDefault(); $("#lb").hidden = true; }
+});
+
 modal.addEventListener("click", e => { if (e.target === modal) modal.close(); });
-modal.addEventListener("close", () => { const v = modal.querySelector("video"); if (v) v.pause(); $("#m-media").innerHTML = ""; markeri.forEach(({ el }) => el.classList.remove("on")); });
+modal.addEventListener("close", () => { const v = modal.querySelector("video"); if (v) v.pause(); $("#m-media").innerHTML = ""; $("#lb").hidden = true; markeri.forEach(({ el }) => el.classList.remove("on")); });
 
 /* Paketi */
 $("#plans").innerHTML = PAKETI.map(p => `
